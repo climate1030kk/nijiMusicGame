@@ -13,6 +13,10 @@ public class NotesTimingMaker : MonoBehaviour {
 	private List<KeyCode> _keys = new List<KeyCode>();
 	private List<float> _keyTimes = new List<float>();
 
+	private float _intv = 0;
+	private const float INTERVAL = 0.1f;
+	private const float MINIMUMDIFFERENCE = 15.0f;
+
 	void Start (){
 		string _musicName = "audio_2"; // 曲名
 		AudioClip audioClip = Resources.Load("mainGame/" + _musicName) as AudioClip;
@@ -23,7 +27,8 @@ public class NotesTimingMaker : MonoBehaviour {
 
 	void Update (){
 		if (_isPlaying) {
-			DetectKeys ();
+			// DetectKeys ();
+			AutoMakeNotes ();
 			// 処理済みなので初期化
 			_keys = new List<KeyCode>();
 			_keyTimes = new List<float>();
@@ -58,5 +63,31 @@ public class NotesTimingMaker : MonoBehaviour {
 
 	void WriteNotesTiming(float time, KeyCode num){
 		_CSVWriter.WriteCSV (time.ToString () + "," + num.ToString());
+	}
+
+	voif AutoMakeNotes(){
+		intv -= Time.deltaTime;
+
+		float[] spectrum = new float [1024];
+		_audioSource.GetSpectrumData(spectrum, 0, FFTWindow.Blackman);
+		// 最も大きい音を取得
+		float nowMax = 0;
+        for (int i = 1; i < spectrum.Length - 1; i++)
+        {
+            if (spectrum[i] >= nowMax)
+            {
+                nowMax = spectrum[i];
+            }
+        }
+        nowMax *= 100;
+        float preMax = nowMax;
+
+ 		if (nowMax >= preMax + MINIMUMDIFFERENCE){
+            if (intv <= 0)
+            {
+            	WriteNotesTiming(_audioSource.time,KeyCode.D);
+                intv = INTERVAL;
+            }
+        }
 	}
 }
