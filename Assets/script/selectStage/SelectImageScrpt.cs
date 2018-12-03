@@ -6,8 +6,6 @@ using UnityEngine;
 public class SelectImageScrpt : MonoBehaviour {
 	[SerializeField]
 	public int index;
-	[SerializeField]
-	public int bpm;
 
 	private Vector3 _arrivePos;
 	private Vector3 _posSpeed;
@@ -17,36 +15,49 @@ public class SelectImageScrpt : MonoBehaviour {
 	private float _arriveTime = 1.0f;
 
 	private SelectSceneManager _sceneManager;
-	private int _stageNumber = 1;
 
 	private AudioSource _audioSources;
+    private AudioSource _previewAudioSource;
 
-	void Start(){
-		GameObject obj = GameObject.FindGameObjectWithTag ("sceneManager");
-		_sceneManager = obj.GetComponent<SelectSceneManager> ();
-		string name = this.gameObject.GetComponent<SpriteRenderer> ().sprite.name;
-		_stageNumber = int.Parse(name.Replace ("selectImage", ""));
+    public List<Sprite> imageSprites = new List<Sprite>();
+    public List<Sprite> infoSprites = new List<Sprite>();
+    public List<float> bpms = new List<float>();
+    public List<int> climaxBars = new List<int>();
 
-		if (index == 1) {
-			_sceneManager.setStageNumber (_stageNumber);
-			_sceneManager.setBpm (bpm);
-		}
-	}
+    private SpriteRenderer _imageSpriteRenderer;
+    private SpriteRenderer _infoSpriteRenderer;
 
-//	void Update(){
-//		if (Mathf.Abs (_arrivePos.x - this.gameObject.transform.position.x) <= 0.05f) {
-//			this.gameObject.transform.position = _arrivePos;
-//		} else {
-//			this.gameObject.transform.position += _posSpeed;
-//			this.gameObject.transform.localScale += _scaleSpeed;
-//		}
-//	}
+    void Start(){
+        _imageSpriteRenderer = this.transform.Find("selectImage").transform.gameObject.GetComponent<SpriteRenderer>();
+        _infoSpriteRenderer = this.transform.Find("selectInfo").transform.gameObject.GetComponent<SpriteRenderer>();
 
-	public void setIndex(int index_){
-		index = index_;
-	}
+        GameObject obj = GameObject.FindGameObjectWithTag("sceneManager");
+        _sceneManager = obj.GetComponent<SelectSceneManager>();
+        _sceneManager.setStageNumber(index + 1);
+        _sceneManager.setBpm(bpms[index]);
+        _sceneManager.setClimaxBar(climaxBars[index]);
+        _sceneManager.setDifficulyLevel(1);
 
-	public int getIndex(){
+        _previewAudioSource = this.gameObject.GetComponents<AudioSource>()[1];
+        _previewAudioSource.clip = Resources.Load("mainGame/preview_" + (index + 1)) as AudioClip;
+        _previewAudioSource.Play();
+        _previewAudioSource.loop = true;
+    }
+
+    public void setIndex(int index_)
+    {
+        index_ = imageSprites.Count <= index_ ? 0 : index_;
+        index_ = 0 > index_ ? imageSprites.Count -  1 : index_;
+        index = index_;
+        UpdateSprite();
+
+        _previewAudioSource.Stop();
+        _previewAudioSource.clip = Resources.Load("mainGame/preview_" + (index + 1)) as AudioClip;
+        _previewAudioSource.Play();
+        _previewAudioSource.loop = true;
+    }
+
+    public int getIndex(){
 		return index;
 	}
 
@@ -61,12 +72,19 @@ public class SelectImageScrpt : MonoBehaviour {
 		_scaleSpeed = new Vector3(distanceScale.x / _arriveTime,distanceScale.y / _arriveTime,distanceScale.z / _arriveTime);
 	}
 
-	void OnMouseDown(){
-		this.transform.parent.gameObject.transform.localScale = new Vector3 (0.0f, 0.0f, 0.0f);
-		_audioSources = this.gameObject.GetComponent<AudioSource> ();
+	public void nextScene(){
+		_audioSources = this.gameObject.GetComponents<AudioSource> ()[0];
 		_audioSources.PlayOneShot (_audioSources.clip);
-		_sceneManager.setStageNumber (_stageNumber);
-		_sceneManager.setBpm (bpm);
-		_sceneManager.nextScene ();
+       
+        _sceneManager.setStageNumber(index + 1);
+        _sceneManager.setBpm(bpms[index]);
+        _sceneManager.setClimaxBar(climaxBars[index]);
+        _sceneManager.nextScene ();
 	}
+
+    private void UpdateSprite()
+    {
+        _imageSpriteRenderer.sprite = imageSprites[index];
+        _infoSpriteRenderer.sprite = infoSprites[index];
+    }
 }

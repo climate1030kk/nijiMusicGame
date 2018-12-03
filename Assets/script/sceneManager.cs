@@ -5,16 +5,36 @@ using UnityEngine.SceneManagement;
 
 public class sceneManager : MonoBehaviour {
 
-	[SerializeField]
-	public string sceneName = "";
-	bool fade = false;
+    [SerializeField]
+    private string sceneName = "";
+    bool fade = false;
 	Material mat;
 	float fadeSpeed = 0.05f;
 
 	[SerializeField]
 	public bool anyKeyStart = false;
 
-	void Start(){
+    [RuntimeInitializeOnLoadMethod]
+    static void OnRuntimeMethodLoad()
+    {
+        Screen.SetResolution(1024, 700, false, 60);
+
+    }
+
+    public string SceneName
+    {
+        get
+        {
+            return sceneName;
+        }
+
+        set
+        {
+            sceneName = value;
+        }
+    }
+
+    void Start(){
 		GameObject child = transform.Find ("fade").gameObject;
 		mat = child.GetComponent<MeshRenderer>().material;
 	}
@@ -44,7 +64,13 @@ public class sceneManager : MonoBehaviour {
 		fade = true;
 	}
 
-	private void nextScene(){
-		SceneManager.LoadScene(sceneName);
+    public void nextSceneTrigger(string sceneName_)
+    {
+        sceneName = sceneName_;
+        fade = true;
+    }
+
+    private void nextScene(){
+		SceneManager.LoadScene(SceneName);
 	}
 }

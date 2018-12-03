@@ -18,10 +18,10 @@ public class laneScript : MonoBehaviour {
 	private lifeGageManager lifeGageManager;
 
 	const float MISS = 1.0f;
-	const float BAD = 0.9f;
-	const float GOOD = 0.8f;
-	const float GREAT = 0.6f;
-	const float EXCELLENT = 0.4f;
+	const float BAD = 0.8f;
+	const float GOOD = 0.7f;
+	const float GREAT = 0.5f;
+	const float EXCELLENT = 0.3f;
 
 	int excellentPoint;
 
@@ -36,20 +36,32 @@ public class laneScript : MonoBehaviour {
 	void OnGUI(){
 		//  押されたキーとその時間を取得
 		if(Event.current.type == EventType.KeyDown) {
-			if (key == Event.current.keyCode) {
-				GameObject[] notes = GameObject.FindGameObjectsWithTag ("note");
-				checkNotes (notes);
-				var obj = Instantiate (rippleEffect);
-				obj.transform.position = this.transform.position;
-			}
-
+            if (key == Event.current.keyCode) {
+                PushKey();
+            }
 		}
 	}
 
-	// このlaneでのポイントを取得
-	public int getPoint () {
+    private void Update()
+    {
+       // if (Input.GetKeyDown(key))
+        //{
+            //PushKey();
+        //}
+    }
+
+    // このlaneでのポイントを取得
+    public int getPoint () {
 		return _totalPoint;
 	}
+
+    private void PushKey()
+    {
+        GameObject[] notes = GameObject.FindGameObjectsWithTag("note");
+        checkNotes(notes);
+       // var obj = Instantiate(rippleEffect);
+        //obj.transform.position = new Vector3(this.transform.position.x, this.transform.position.y, this.transform.position.z - 3);
+    }
 
 	// ノーツがかぶっているかどうかを確認
 	private void checkNotes(GameObject[] notes){
@@ -79,7 +91,8 @@ public class laneScript : MonoBehaviour {
 						addCombo = 1;
 					} else if (diff / maxDiff <= GOOD) {
 						rate = GOOD;
-					} else if (diff / maxDiff <= BAD) {
+                        addCombo = 1;
+                    } else if (diff / maxDiff <= BAD) {
 						rate = BAD;
 					} else if (diff / maxDiff <= MISS) {
 						rate = MISS;
@@ -100,7 +113,7 @@ public class laneScript : MonoBehaviour {
 			Destroy (textobj);
 		}
 			
-		int sumCombo = _totalPointObj.GetComponent<totalPoint>().AddCombo(addCombo);
+		int sumCombo = _totalPointObj.AddCombo(addCombo);
 
 		if (rate == EXCELLENT) {
 			var obj = Instantiate (succesText);
@@ -110,7 +123,7 @@ public class laneScript : MonoBehaviour {
 			obj.GetComponent<SuccessText> ().SetText (sumCombo.ToString() + " combo\n" + "GREAT");
 		} else if(rate == GOOD){
 			var obj = Instantiate (succesText);
-			obj.GetComponent<SuccessText> ().SetText ("GOOD");
+            obj.GetComponent<SuccessText>().SetText(sumCombo.ToString() + " combo\n" + "GOOD");
 		} else if (rate == BAD) {
 			var obj = Instantiate (succesText);
 			obj.GetComponent<SuccessText> ().SetText ("BAD");
@@ -119,7 +132,7 @@ public class laneScript : MonoBehaviour {
 			obj.GetComponent<SuccessText> ().SetText ("MISS");
 		}
 		_totalPoint += (int)(addPoint * 1 - rate);
-		_audioSources [addCombo].PlayOneShot (_audioSources [addCombo].clip);
+		_audioSources [addCombo].Play();
 	}
 
 	public int GetExcellentPoint(){

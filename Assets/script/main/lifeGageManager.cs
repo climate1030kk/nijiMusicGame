@@ -32,6 +32,6 @@ public class lifeGageManager : MonoBehaviour {
 
 	// ゲームオーバー
 	public void GameOver(){
-		SceneManager.LoadScene("selectStage");
+		//SceneManager.LoadScene("selectStage");
 	}
 }
